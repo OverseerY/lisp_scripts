@@ -1,0 +1,48 @@
+(prompt "\nType \"VL-POLY\" to run.........")
+(defun c:vl-poly ( / sset item ctr check theobj thelist n xval yval fname fn)
+  (vl-load-com)
+  (setq fname "coord.svg")
+  (setq fn (open fname "a"))
+  (write-line "<?xml version=\"1.0\" standalone=\"no\"?>" fn)
+  (write-line "<svg viewBox=\"0 -250 500 1000\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" stroke-linecap=\"round\" stroke-linejoin=\"round\" fill-rule=\"evenodd\" xml:space=\"preserve\" >" fn)
+  (write-line "<g clip-path=\"url(#clipId0)\" fill=\"none\" stroke=\"rgb(1,1,1)\" stroke-width=\"0.9\" />" fn)
+  (write-line "<g clip-path=\"url(#clipId0)\" fill=\"none\" stroke=\"rgb(1,1,1)\" stroke-width=\"0.9\" >" fn)
+  (close fn)
+  (while
+    (setq sset (ssget))
+    (setq ctr 0)
+    (repeat (sslength sset)
+      (setq item (ssname sset ctr))
+      (setq item (vlax-ename->vla-object item))
+      (if (= (vlax-get-property item 'ObjectName) "AcDbPolyline")
+        (progn
+          (setq thelist (vlax-get-property item 'coordinates))
+          (setq thelist (vlax-safearray->list (variant-value thelist)))
+          (setq n 0)
+          (setq fname "coord.svg")
+          (setq fn (open fname "a"))
+          (write-line "<polyline points=\"" fn)
+          (repeat (/ (length thelist) 2)
+	    (setq xval (rtos (nth n thelist)))
+	    (setq n (1+ n))
+	    (setq yval (rtos (nth n thelist)))
+	    (write-line (strcat xval "," yval " ") fn)
+	    (setq n (1+ n))
+          );repeat
+          (write-line "\" />" fn)
+          (close fn)
+        );progn
+        (alert "This is not a Polyline! - Please try again")
+      );if
+      (princ)
+      (setq ctr (1+ ctr))
+    );repeat
+    (setq fname "coord.svg")
+    (setq fn (open fname "a"))
+    (write-line "</g>" fn)
+    (write-line "</svg>" fn)
+    (close fn)
+  );while
+  (princ)
+);defun
+(princ)
